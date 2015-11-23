@@ -17,6 +17,15 @@ __all__ = ('CreateFTSIndexOperation', 'CreateFTSTriggerOperation',
     @author: David Miguel
 """
 
+def get_apps(state):
+    """
+    Supports transition of migrations between django versions.
+    """
+    # .apps property has been introduced in django 1.8
+    if hasattr(state, 'apps'):
+        return state.apps
+    return state.render()
+
 
 class PgFtsSQL(object):
     sql_delete_trigger = ("DROP TRIGGER {model}_{fts_name}_update ON \"{model}\";"
@@ -150,7 +159,7 @@ class BaseVectorOperation(Operation):
     def database_forwards(self, app_label, schema_editor, from_state,
                           to_state):
 
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
         schema_editor.execute(self.forward_fn(
             model,
@@ -160,7 +169,7 @@ class BaseVectorOperation(Operation):
     def database_backwards(self, app_label, schema_editor, from_state,
                            to_state):
 
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
 
         schema_editor.execute(self.backward_fn(
@@ -218,7 +227,7 @@ class CreateFTSTriggerOperation(BaseVectorOperation):
     def database_backwards(self, app_label, schema_editor, from_state,
                            to_state):
 
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
 
         schema_editor.execute(self.backward_fn(
@@ -279,9 +288,7 @@ class CreateFTSIndexOperation(BaseVectorOperation):
 
     def database_forwards(self, app_label, schema_editor, from_state,
                           to_state):
-        # print(dir(from_state))
-        # django 1.8 doesn't have ProjectState.render()
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
         if not isinstance(vector_field, TSVectorField):
             raise AttributeError
@@ -292,7 +299,7 @@ class CreateFTSIndexOperation(BaseVectorOperation):
     def database_backwards(self, app_label, schema_editor, from_state,
                            to_state):
 
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
 
         schema_editor.execute(self.sql_creator.delete_index(
@@ -317,7 +324,7 @@ class DeleteFTSIndexOperation(CreateFTSIndexOperation):
 
     def database_forwards(self, app_label, schema_editor, from_state,
                           to_state):
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
 
         schema_editor.execute(self.sql_creator.delete_index(
@@ -328,7 +335,7 @@ class DeleteFTSIndexOperation(CreateFTSIndexOperation):
     def database_backwards(self, app_label, schema_editor, from_state,
                            to_state):
 
-        model = from_state.render().get_model(app_label, self.name)
+        model = get_apps(from_state).get_model(app_label, self.name)
         vector_field = model._meta.get_field_by_name(self.fts_vector)[0]
         if not isinstance(vector_field, TSVectorField):
             raise AttributeError
