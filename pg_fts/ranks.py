@@ -10,7 +10,7 @@ from django.db.models.sql import aggregates
 from django.core import exceptions
 from pg_fts.fields import TSVectorBaseField
 
-__all__ = ('FTSRankCd', 'FTSRank', 'FTSRankDictionay', 'FTSRankCdDictionary')
+__all__ = ('FTSRankCd', 'FTSRank', 'FTSRankDictionary', 'FTSRankCdDictionary')
 
 
 class AggregateRegister(aggregates.Aggregate):
@@ -212,7 +212,7 @@ class FTSRankCd(FTSRank):
     name = 'FTSRankCd'
 
 
-class FTSRankDictionay(FTSRank):
+class FTSRankDictionary(FTSRank):
     """
     Interface for PostgreSQL ts_rank with **language lookup**
 
@@ -232,7 +232,7 @@ class FTSRankDictionay(FTSRank):
     Example::
 
         Article.objects.annotate(
-            rank=FTSRankDictionay(fts_index__portuguese__search='Hello world',
+            rank=FTSRankDictionary(fts_index__portuguese__search='Hello world',
                                   normalization=[1,2]))
 
     SQL equivalent:
@@ -258,7 +258,7 @@ class FTSRankDictionay(FTSRank):
         self._do_checks()
 
 
-class FTSRankCdDictionary(FTSRankDictionay):
+class FTSRankCdDictionary(FTSRankDictionary):
     """
     Interface for PostgreSQL ts_rank_cd with **language lookup**
 
