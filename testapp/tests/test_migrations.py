@@ -76,7 +76,7 @@ class CreateOperationTestSQL(TestCase):
         call_command('sqlmigrate', 'testapp', '0002', stdout=stdout)
         self.assertIn('"tsvector" tsvector null', stdout.getvalue().lower())
         self.assertIn(
-            "UPDATE testapp_tsvectormodel SET tsvector = setweight(to_tsvector('english', COALESCE(title, '')), 'D') || setweight(to_tsvector('english', COALESCE(body, '')), 'D');",
+            'UPDATE "testapp_tsvectormodel" SET tsvector = setweight(to_tsvector(\'english\', COALESCE(title, \'\')), \'D\') || setweight(to_tsvector(\'english\', COALESCE(body, \'\')), \'D\');',
             stdout.getvalue())
 
     @override_system_checks([])
@@ -85,8 +85,8 @@ class CreateOperationTestSQL(TestCase):
         stdout = six.StringIO()
         call_command('sqlmigrate', 'testapp', '0003', stdout=stdout)
         self.assertIn(
-            ('CREATE INDEX testapp_tsvectormodel_tsvector ON '
-             'testapp_tsvectormodel USING gin(tsvector);'),
+            (str('CREATE INDEX testapp_tsvectormodel_tsvector ON '
+                 '"testapp_tsvectormodel" USING gin(tsvector);')),
             stdout.getvalue())
 
     @override_system_checks([])
@@ -111,7 +111,7 @@ BEGIN
 RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql';
-CREATE TRIGGER testapp_tsvectormodel_tsvector_update BEFORE INSERT OR UPDATE ON testapp_tsvectormodel
+CREATE TRIGGER testapp_tsvectormodel_tsvector_update BEFORE INSERT OR UPDATE ON "testapp_tsvectormodel"
 FOR EACH ROW EXECUTE PROCEDURE testapp_tsvectormodel_tsvector_update();
 """.split()),
             ''.join(stdout.getvalue().split())
@@ -125,7 +125,7 @@ FOR EACH ROW EXECUTE PROCEDURE testapp_tsvectormodel_tsvector_update();
         call_command('sqlmigrate', 'testapp', '0002', stdout=stdout)
         self.assertIn('"tsvector" tsvector null', stdout.getvalue().lower())
         self.assertIn(
-            "UPDATE testapp_tsvectormodel SET tsvector = setweight(to_tsvector(dictionary::regconfig, COALESCE(title, '')), 'D') || setweight(to_tsvector(dictionary::regconfig, COALESCE(body, '')), 'D');",
+            'UPDATE "testapp_tsvectormodel" SET tsvector = setweight(to_tsvector(dictionary::regconfig, COALESCE(title, \'\')), \'D\') || setweight(to_tsvector(dictionary::regconfig, COALESCE(body, \'\')), \'D\');',
             stdout.getvalue())
 
     @override_system_checks([])
@@ -136,11 +136,7 @@ FOR EACH ROW EXECUTE PROCEDURE testapp_tsvectormodel_tsvector_update();
         call_command('sqlmigrate', 'testapp', '0003', stdout=stdout)
         self.assertIn(
             ('CREATE INDEX testapp_tsvectormodel_tsvector ON '
-             'testapp_tsvectormodel USING gin(tsvector);'),
-            stdout.getvalue())
-        self.assertIn(
-            ('CREATE INDEX testapp_tsvectormodel_tsvector ON '
-             'testapp_tsvectormodel USING gin(tsvector);'),
+             '"testapp_tsvectormodel" USING gin(tsvector);'),
             stdout.getvalue())
 
     @override_system_checks([])
@@ -165,7 +161,7 @@ BEGIN
 RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql';
-CREATE TRIGGER testapp_tsvectormodel_tsvector_update BEFORE INSERT OR UPDATE ON testapp_tsvectormodel
+CREATE TRIGGER testapp_tsvectormodel_tsvector_update BEFORE INSERT OR UPDATE ON "testapp_tsvectormodel"
 FOR EACH ROW EXECUTE PROCEDURE testapp_tsvectormodel_tsvector_update();
 """.split()),
             ''.join(stdout.getvalue().split())
