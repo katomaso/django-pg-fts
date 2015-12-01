@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from testapp.models import TSQueryModel, Related, TSMultidicModel
-from pg_fts.ranks import (FTSRank, FTSRankDictionay, FTSRankCd,
+from pg_fts.ranks import (FTSRank, FTSRankDictionary, FTSRankCd,
                           FTSRankCdDictionary)
 from django.core import exceptions
 
-__all__ = ('AnnotateTestCase', 'FTSRankDictionayTestCase')
+__all__ = ('AnnotateTestCase', 'FTSRankDictionaryTestCase')
 
 
 class AnnotateTestCase(TestCase):
@@ -176,8 +176,8 @@ salvão save o the planeta planet"""
             q.order_by('rank')[0].title, 'malucos crazy como like eu me')
 
 
-class FTSRankDictionayTestCase(TestCase):
-    '''tests for FTSRankDictionayTestCase'''
+class FTSRankDictionaryTestCase(TestCase):
+    '''tests for FTSRankDictionaryTestCase'''
 
     def setUp(self):
         title = 'para for os the mesmo same malucos crazy'
@@ -208,7 +208,7 @@ salvão save o the planeta planet"""
         qn_base_pt = TSMultidicModel.objects.filter(dictionary='portuguese')
         qn_base_en = TSMultidicModel.objects.filter(dictionary='english')
         pt = qn_base_pt.annotate(
-            rank=FTSRankDictionay(tsvector__portuguese__tsquery='para & os'))
+            rank=FTSRankDictionary(tsvector__portuguese__tsquery='para & os'))
 
         self.assertIn(
             '''("testapp_tsmultidicmodel"."tsvector" @@ to_tsquery('portuguese', para & os))''',
@@ -219,7 +219,7 @@ salvão save o the planeta planet"""
             str(pt.query))
 
         en = qn_base_pt.annotate(
-            rank=FTSRankDictionay(tsvector__english__tsquery='para & os'))
+            rank=FTSRankDictionary(tsvector__english__tsquery='para & os'))
 
         self.assertIn(
             '''("testapp_tsmultidicmodel"."tsvector" @@ to_tsquery('english', para & os))''',
@@ -230,16 +230,16 @@ salvão save o the planeta planet"""
             str(en.query))
 
         qn_base_pt.annotate(
-            rank=FTSRankDictionay(tsvector__portuguese__tsquery='para & os')
+            rank=FTSRankDictionary(tsvector__portuguese__tsquery='para & os')
         )
 
     def test_rank_dictionay_related_multidict(self):
         qn_base_pt = Related.objects.filter(multiple__dictionary='portuguese')
         qn_base_en = Related.objects.filter(multiple__dictionary='english')
-        qn_pt = qn_base_pt.annotate(rank=FTSRankDictionay(
+        qn_pt = qn_base_pt.annotate(rank=FTSRankDictionary(
             multiple__tsvector__portuguese__tsquery='para & os'))
 
-        qn_en = qn_base_en.annotate(rank=FTSRankDictionay(
+        qn_en = qn_base_en.annotate(rank=FTSRankDictionary(
             multiple__tsvector__english__tsquery='para & os'))
 
         self.assertIn('''"testapp_tsmultidicmodel"."tsvector" @@ to_tsquery('english', para & os))''',
@@ -259,7 +259,7 @@ salvão save o the planeta planet"""
 
     def test_rank_dictionay_group_by_related(self):
         qn_base_pt = Related.objects.filter(multiple__dictionary='portuguese')
-        qn_pt = qn_base_pt.annotate(rank=FTSRankDictionay(
+        qn_pt = qn_base_pt.annotate(rank=FTSRankDictionary(
             multiple__tsvector__portuguese__tsquery='para & os'))
 
         self.assertIn('"testapp_tsmultidicmodel"."tsvector"',
@@ -289,15 +289,15 @@ salvão save o the planeta planet"""
     def test_transform_dictionary_exception(self):
         with self.assertRaises(exceptions.FieldError) as msg:
             TSMultidicModel.objects.annotate(
-                rank=FTSRankDictionay(tsvector__nodict='malucos')),
+                rank=FTSRankDictionary(tsvector__nodict='malucos')),
         self.assertEqual(
             str(msg.exception),
-            "The 'nodict' isn't valid Lookup for FTSRankDictionay")
+            "The 'nodict' isn't valid Lookup for FTSRankDictionary")
 
     def test_transform_exception(self):
         with self.assertRaises(exceptions.FieldError) as msg:
             list(TSMultidicModel.objects.annotate(
-                rank=FTSRankDictionay(tsvector__portuguese='malucos')))
+                rank=FTSRankDictionary(tsvector__portuguese='malucos')))
         self.assertEqual(
             str(msg.exception),
-            "The 'portuguese' isn't valid Lookup for FTSRankDictionay")
+            "The 'portuguese' isn't valid Lookup for FTSRankDictionary")
