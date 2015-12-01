@@ -56,7 +56,7 @@ class FTSTestBase(TransactionTestCase):
             table = TableInfo(name=table, type='t')
         with connection.cursor() as cursor:
             self.assertIn(table,
-                          connection.introspection.get_table_list(cursor))
+                          map(lambda table_list: table_list.name, connection.introspection.get_table_list(cursor)))
 
     def assertTableNotExists(self, table):
         if table_info:
